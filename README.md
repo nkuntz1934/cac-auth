@@ -177,6 +177,71 @@ curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/ce
 
 Then add the route to `wrangler.jsonc` and redeploy.
 
+## Adding to Other Zones
+
+To deploy CAC authentication to a different Cloudflare zone (different domain):
+
+### 1. Get the Zone ID for the new domain
+
+```bash
+wrangler zones list
+```
+
+Or via API:
+
+```bash
+curl -X GET "https://api.cloudflare.com/client/v4/zones?name=newdomain.com" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -H "Content-Type: application/json"
+```
+
+### 2. Associate the CA bundle with the new zone's hostname
+
+The CA bundle is uploaded at the account level and can be reused across multiple zones:
+
+```bash
+NEW_ZONE_ID="new-zone-id"
+
+curl -X PUT "https://api.cloudflare.com/client/v4/zones/${NEW_ZONE_ID}/certificate_authorities/hostname_associations" \
+  -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"hostnames\": [\"cac.newdomain.com\"],
+    \"mtls_certificate_id\": \"${CERT_ID}\"
+  }"
+```
+
+### 3. Update wrangler.jsonc
+
+Add the new domain to the routes array:
+
+```jsonc
+{
+  "name": "cac-auth",
+  "main": "index.js",
+  "compatibility_date": "2024-01-01",
+  "account_id": "your-account-id",
+  "routes": [
+    {
+      "pattern": "cac.yourdomain.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "cac.newdomain.com",
+      "custom_domain": true
+    }
+  ]
+}
+```
+
+### 4. Deploy
+
+```bash
+wrangler deploy
+```
+
+The same Worker will now handle CAC authentication for both domains.
+
 ## How It Works
 
 1. **Certificate Upload**: DoD Root CA 6 and all intermediate CAs are uploaded to Cloudflare as a trusted CA bundle
