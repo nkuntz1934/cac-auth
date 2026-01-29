@@ -2,7 +2,7 @@
   "name": "cac-auth",
   "main": "index.js",
   "compatibility_date": "2024-01-01",
-  "account_id": "72a61d050034cb73f26694a75073f83a",
+  "account_id": "your-account-id",
 
   // Deploy to your mTLS-enabled hostname
   "routes": [
