@@ -2,6 +2,23 @@
 
 Enable DoD Common Access Card (CAC) authentication using Cloudflare Workers with mTLS and Bring Your Own CA (BYOCA).
 
+## How mTLS Works
+
+Mutual TLS (mTLS) provides two-way certificate authentication:
+
+1. The server (Cloudflare) presents its certificate to the client (browser)
+2. The client (browser) presents its certificate (CAC) back to the server
+3. Both sides validate each other's certificates
+
+In this implementation:
+- Cloudflare requests a client certificate when accessing the configured hostname
+- The browser presents the DoD CAC certificate
+- Cloudflare validates the CAC against the uploaded CA bundle (Root CA 6 + intermediate CAs)
+- Cloudflare passes the validation result to the Worker
+- The Worker returns the authenticated certificate details
+
+The mTLS handshake happens at the Cloudflare edge before the request reaches the Worker.
+
 ## Prerequisites
 
 - Cloudflare Enterprise account (required for BYOCA/mTLS)
