@@ -129,10 +129,8 @@ Expected response with valid CAC:
 ```json
 {
   "authenticated": true,
-  "cloudflareVerified": true,
   "certificate": {
     "verified": true,
-    "customVerified": true,
     "subject": "CN=DOE.JOHN.1234567890,OU=USA,OU=PKI,OU=DoD,O=U.S. Government,C=US",
     "issuer": "CN=DOD ID CA-70,OU=PKI,OU=DoD,O=U.S. Government,C=US",
     "serial": "...",
@@ -166,9 +164,7 @@ Then add the route to `wrangler.jsonc` and redeploy.
 
 1. **Certificate Upload**: DoD Root CA 6 and all intermediate CAs are uploaded to Cloudflare as a trusted CA bundle
 2. **Hostname Association**: Specific hostnames are configured to request client certificates signed by these CAs
-3. **Worker Validation**: The Worker validates certificates using both:
-   - Cloudflare's built-in verification (checks full certificate chain)
-   - Custom validation (checks issuer matches DoD CAs and certificate is not expired)
+3. **Worker Validation**: Cloudflare validates the full certificate chain against the uploaded CA bundle
 4. **Response**: Returns authenticated user information from the CAC certificate
 
 ## Important Notes
@@ -186,6 +182,8 @@ Then add the route to `wrangler.jsonc` and redeploy.
 **Browser doesn't prompt for certificate**: Check that the hostname association is active and mTLS is properly configured.
 
 **401 Unauthorized**: Certificate may be expired, not issued by a trusted DoD CA, or CAC middleware may not be running.
+
+**VPN interference**: Many VPNs perform SSL inspection which breaks client certificate authentication. Disable VPN when testing CAC authentication.
 
 ## References
 
