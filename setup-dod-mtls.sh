@@ -64,9 +64,10 @@ RESPONSE=$(curl -s -X PUT "$API/zones/${CLOUDFLARE_ZONE_ID}/certificate_authorit
 if echo "$RESPONSE" | grep -q '"success":true'; then
   echo "Success!"
   echo ""
-  echo "Next steps:"
-  echo "1. Enable mTLS in dashboard: SSL/TLS → Client Certificates → Hosts → Add '$HOSTNAME'"
-  echo "2. Deploy the example worker: wrangler deploy"
+  echo "mTLS is now configured for $HOSTNAME (API-only, not visible in dashboard)"
+  echo ""
+  echo "Next step:"
+  echo "1. Deploy the worker: wrangler deploy"
 else
   echo "Error associating hostname:"
   echo "$RESPONSE" | grep -o '"message":"[^"]*"' || echo "$RESPONSE"

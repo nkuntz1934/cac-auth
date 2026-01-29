@@ -69,7 +69,15 @@ EOF
 cat DODROOTCA6.pem DODIDCA_70.pem DODIDCA_71.pem DODIDCA_72.pem DODIDCA_73.pem DODIDCA_78.pem DODIDCA_79.pem > dod_complete_ca_bundle.pem
 ```
 
-### 3. Set Environment Variables
+### 3. Get Your Account ID
+
+```bash
+wrangler whoami
+```
+
+Note the Account ID for your account.
+
+### 4. Set Environment Variables
 
 ```bash
 export CLOUDFLARE_ACCOUNT_ID="your-account-id"
@@ -77,7 +85,7 @@ export CLOUDFLARE_ZONE_ID="your-zone-id"
 export CLOUDFLARE_API_TOKEN="your-api-token"
 ```
 
-### 4. Upload CA Bundle to Cloudflare
+### 5. Upload CA Bundle to Cloudflare
 
 ```bash
 CERT_CONTENT=$(cat dod_complete_ca_bundle.pem | awk '{printf "%s\\n", $0}')
@@ -94,10 +102,10 @@ curl "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/mtl
 
 Save the returned certificate ID from the response.
 
-### 5. Associate Certificate with Hostname
+### 6. Associate Certificate with Hostname
 
 ```bash
-CERT_ID="certificate-id-from-step-4"
+CERT_ID="certificate-id-from-step-5"
 
 curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/certificate_authorities/hostname_associations" \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
@@ -108,16 +116,17 @@ curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/ce
   }"
 ```
 
-### 6. Configure Worker
+Note: BYOCA hostname associations are API-only and will not appear in the Cloudflare dashboard. No additional dashboard configuration is required.
 
-Update `wrangler.jsonc` with your account ID and domain:
+### 7. Configure Worker
+
+Edit `wrangler.jsonc` to update the hostname pattern:
 
 ```jsonc
 {
   "name": "cac-auth",
   "main": "index.js",
-  "compatibility_date": "2024-01-01",
-  "account_id": "your-account-id",
+  "compatibility_date": "2025-01-01",
   "routes": [
     {
       "pattern": "cac.yourdomain.com",
@@ -127,7 +136,9 @@ Update `wrangler.jsonc` with your account ID and domain:
 }
 ```
 
-### 7. Deploy Worker
+Note: The `account_id` field is optional when using the `CLOUDFLARE_ACCOUNT_ID` environment variable.
+
+### 8. Deploy Worker
 
 ```bash
 wrangler deploy
@@ -135,13 +146,15 @@ wrangler deploy
 
 ## Testing
 
-Access your CAC-enabled URL with a CAC inserted:
+Access your CAC-enabled URL in a browser with your CAC inserted. Make sure your VPN is disabled.
 
-```bash
-curl https://cac.yourdomain.com
-```
+Visit: `https://cac.yourdomain.com`
 
-Expected response with valid CAC:
+The browser will display an HTML page showing your authentication status and certificate details.
+
+To get JSON response, visit: `https://cac.yourdomain.com/api`
+
+Expected JSON response with valid CAC:
 
 ```json
 {
@@ -184,12 +197,6 @@ To deploy CAC authentication to a different Cloudflare zone (different domain):
 ### 1. Get the Zone ID for the new domain
 
 ```bash
-wrangler zones list
-```
-
-Or via API:
-
-```bash
 curl -X GET "https://api.cloudflare.com/client/v4/zones?name=newdomain.com" \
   -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
   -H "Content-Type: application/json"
@@ -219,8 +226,7 @@ Add the new domain to the routes array:
 {
   "name": "cac-auth",
   "main": "index.js",
-  "compatibility_date": "2024-01-01",
-  "account_id": "your-account-id",
+  "compatibility_date": "2025-01-01",
   "routes": [
     {
       "pattern": "cac.yourdomain.com",

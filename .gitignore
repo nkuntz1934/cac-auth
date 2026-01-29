@@ -1,3 +1,8 @@
 .env
 .wrangler/
-wrangler.local.jsonc
+
+# Certificate files
+*.cer
+*.pem
+*.p7b
+*.p7c

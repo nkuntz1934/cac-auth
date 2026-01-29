@@ -1,8 +1,7 @@
 {
   "name": "cac-auth",
   "main": "index.js",
-  "compatibility_date": "2024-01-01",
-  "account_id": "your-account-id",
+  "compatibility_date": "2025-01-01",
 
   // Deploy to your mTLS-enabled hostname
   "routes": [
